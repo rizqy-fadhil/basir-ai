@@ -1,6 +1,6 @@
 # Design Spec: Basir AI — Dashboard Okupansi Cafe
 
-Berdasarkan `PED.md`. Fokus: halaman publik yang dilihat pengguna WFC sebelum berangkat (US-005, US-006, US-007), dengan status meja per US-004.
+Berdasarkan `PRD.md`. Fokus: halaman publik yang dilihat pengguna WFC sebelum berangkat (US-005, US-006, US-007), dengan status meja per US-004.
 
 ## 1. Subjek dan Ketegangan Inti
 
