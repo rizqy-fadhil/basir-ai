@@ -1,7 +1,28 @@
 {
   "cafe_id": 1,
   "area_kamera": "workspace-1",
-  "frame_width": null,
-  "frame_height": null,
-  "rois": []
+  "frame_width": 32,
+  "frame_height": 18,
+  "rois": [
+    {
+      "nomor_meja": 1,
+      "kapasitas": 2,
+      "polygon": [[1, 2], [15, 2], [15, 9], [1, 9]]
+    },
+    {
+      "nomor_meja": 2,
+      "kapasitas": 2,
+      "polygon": [[17, 2], [31, 2], [31, 9], [17, 9]]
+    },
+    {
+      "nomor_meja": 3,
+      "kapasitas": 4,
+      "polygon": [[1, 10], [15, 10], [15, 17], [1, 17]]
+    },
+    {
+      "nomor_meja": 4,
+      "kapasitas": 4,
+      "polygon": [[17, 10], [31, 10], [31, 17], [17, 17]]
+    }
+  ]
 }

@@ -137,7 +137,7 @@ RTSP_URL=
 DETECTION_INTERVAL_SECONDS=45
 YOLO_MODEL_PATH=yolov8n.pt
 MOCK_MODE=true
-MOCK_FRAME_PATH=dataset/mock/workspace.jpg
+MOCK_FRAME_PATH=dataset/mock/workspace.ppm
 
 # backend API
 DATABASE_URL=postgresql://user:pass@db:5432/basirai

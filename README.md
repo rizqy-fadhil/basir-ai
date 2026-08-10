@@ -37,6 +37,8 @@ docker compose up -d db
 
 Perintah di atas hanya menyalakan PostgreSQL untuk fase fondasi. Service backend, inference, dan web akan diaktifkan setelah implementasi masing-masing tersedia.
 
+Fixture mock yang digunakan pada tahap ini adalah `dataset/mock/workspace.ppm`. File tersebut sintetis, hanya untuk pengujian lokal, dan tidak merepresentasikan rekaman cafe nyata.
+
 ## Aturan pengembangan
 
 - Gunakan mock mode untuk pengujian tanpa kamera fisik dan tandai hasil mock secara jujur.
