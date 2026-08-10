@@ -4,7 +4,10 @@ Basir AI adalah MVP sistem ketersediaan meja workspace cafe. Kamera area workspa
 
 ## Status repository
 
-Repository ini sedang dibangun bertahap. Fase fondasi (Plan 0) menyiapkan kontrak teknis, konfigurasi lokal, skema database, dependency manifest, dan kerangka Docker Compose. Pipeline inference, API, dan dashboard belum diimplementasikan pada fase ini.
+Fondasi teknis, kontrak model, dan pipeline reproducible untuk menyiapkan
+dataset Table–Chair sudah tersedia. Pipeline inference runtime, API, dan
+dashboard masih dikembangkan; bobot fine-tuned belum diklaim tersedia sebelum
+training dan evaluasi held-out benar-benar dijalankan.
 
 ## Struktur canonical
 
@@ -12,7 +15,7 @@ Repository ini sedang dibangun bertahap. Fase fondasi (Plan 0) menyiapkan kontra
 inference/       capture, YOLO, ROI, occupancy, snapshot
 backend/         FastAPI, SQLAlchemy, Alembic
 web/             Next.js dashboard publik
-dataset/         sample/mock input; sumber dan lisensi wajib dicatat
+dataset/         pipeline Open Images + sample/mock input; sumber wajib dicatat
 context/         aturan kompetisi
 ```
 

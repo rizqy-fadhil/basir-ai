@@ -35,6 +35,9 @@ pnpm-debug.log*
 snapshots/
 data/raw/
 data/processed/
+data/open_images/
+data/runs/
+runs/
 dataset/private/
 dataset/generated/
 

@@ -124,7 +124,12 @@ basir-ai/
 │   ├── tests/
 │   └── requirements.txt
 │
-├── dataset/                    # sample/mock input; sumber dan lisensi wajib dicatat
+├── dataset/                    # pipeline dataset; sumber dan lisensi wajib dicatat
+│   ├── prepare_open_images.py  # kandidat + konversi Open Images ke YOLO
+│   ├── train_table_chair.py    # entrypoint fine-tuning model kalibrasi
+│   ├── table-chair.yaml        # template dataset YAML Ultralytics
+│   ├── tests/
+│   └── mock/                   # fixture sintetis untuk pengujian lokal
 │
 ├── backend/                    # FastAPI — API + koneksi DB
 │   ├── app/

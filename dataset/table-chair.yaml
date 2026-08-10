@@ -1,0 +1,8 @@
+# Template for Ultralytics after data/open_images/processed has been generated.
+# Run training from the repository root so this relative path remains stable.
+path: data/open_images/processed
+train: images/train
+val: images/validation
+names:
+  0: table
+  1: chair
