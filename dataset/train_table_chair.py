@@ -106,6 +106,24 @@ def _base_manifest(args: argparse.Namespace, run_dir: Path) -> dict[str, Any]:
     }
 
 
+def _require_training_artifacts(data_path: Path) -> None:
+    """Reject an empty/generated-only YAML before Ultralytics starts training."""
+
+    root = data_path.parent
+    missing: list[str] = []
+    for split in ("train", "validation"):
+        for kind in ("images", "labels"):
+            directory = root / kind / split
+            if not directory.is_dir() or not any(directory.iterdir()):
+                missing.append(str(directory))
+    if missing:
+        raise RuntimeError(
+            "artifact train/validation belum siap; jalankan review, prepare, "
+            "split_manifest.py --materialize terlebih dahulu. Missing: "
+            + ", ".join(missing)
+        )
+
+
 def run_training(args: argparse.Namespace) -> dict[str, Any]:
     if not args.data.is_file() and not args.dry_run:
         raise RuntimeError(
@@ -118,6 +136,7 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
     if args.dry_run:
         manifest["status"] = "dry-run"
         return manifest
+    _require_training_artifacts(args.data)
     try:
         from ultralytics import YOLO
     except ImportError as exc:

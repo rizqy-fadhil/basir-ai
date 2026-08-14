@@ -7,7 +7,7 @@ POST — internal endpoint for the inference service to upsert table status.
 from __future__ import annotations
 
 import os
-from datetime import datetime, timezone
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session

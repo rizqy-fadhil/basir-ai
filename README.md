@@ -5,9 +5,11 @@ Basir AI adalah MVP sistem ketersediaan meja workspace cafe. Kamera area workspa
 ## Status repository
 
 Fondasi teknis, kontrak model, dan pipeline reproducible untuk menyiapkan
-dataset Table–Chair sudah tersedia. Pipeline inference runtime, API, dan
-dashboard masih dikembangkan; bobot fine-tuned belum diklaim tersedia sebelum
-training dan evaluasi held-out benar-benar dijalankan.
+dataset Table–Chair sudah tersedia. Pipeline inference runtime dan occupancy
+engine memiliki detector person serta penghitungan status per ROI yang teruji
+dengan fixture mock. Fine-tuning table-chair masih menunggu review manual
+dataset, artifact gambar, dan environment training; bobot atau metric belum
+diklaim sebelum eksperimen held-out benar-benar dijalankan.
 
 ## Struktur canonical
 

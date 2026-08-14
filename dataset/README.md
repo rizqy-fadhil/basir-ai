@@ -57,6 +57,24 @@ normalized `xywh`, manifest provenance, dan `data.yaml`. Box `IsGroupOf` dan
 `IsDepiction` dikeluarkan; box occluded/truncated tetap dipertahankan agar
 model kalibrasi menghadapi kondisi seating yang realistis.
 
+## Split reproducible
+
+Setelah kandidat ditinjau dan artifact gambar/label tersedia, buat split lokal
+70/15/15. Split dilakukan per kombinasi label dengan hash SHA-256 yang stabil,
+sehingga tidak berubah antar-run dan tidak membocorkan image ID antar subset:
+
+```powershell
+python dataset/split_manifest.py `
+  --input data/open_images/processed/candidates_validation.csv `
+  --processed-dir data/open_images/processed `
+  --materialize
+```
+
+Perintah ini menulis `splits/{train,validation,test}.csv`,
+`splits/split_manifest.json`, dan `data.yaml`. Ia akan berhenti jika belum ada
+baris `include` dengan `license_verified=true` serta `scene_verified=true`,
+atau jika gambar/label yang akan dimaterialisasi belum tersedia.
+
 ## Fine-tuning dan manifest
 
 `train_table_chair.py` menginisialisasi model kedua dari `yolov8n.pt` (nilai
@@ -74,6 +92,17 @@ dataset yang sudah direview:
 python dataset/train_table_chair.py `
   --data data/open_images/processed/data.yaml `
   --model yolov8n.pt
+```
+
+Evaluasi wajib dijalankan pada split `test` yang tidak dipakai untuk training.
+Script menyimpan precision, recall, mAP50, dan mAP50-95 per class hanya dari
+hasil yang dikembalikan Ultralytics:
+
+```powershell
+python dataset/evaluate_table_chair.py `
+  --model inference/models/table-chair-best.pt `
+  --data data/open_images/processed/data.yaml `
+  --split test
 ```
 
 Sesudah training, script menyimpan training manifest dengan parameter aktual,
