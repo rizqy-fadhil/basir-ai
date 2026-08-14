@@ -128,6 +128,7 @@ basir-ai/
 │
 ├── dataset/                    # pipeline dataset; sumber dan lisensi wajib dicatat
 │   ├── prepare_open_images.py  # kandidat + konversi Open Images ke YOLO
+│   ├── download_candidate_previews.py # preview lokal; tidak memverifikasi curation
 │   ├── split_manifest.py       # split train/validation/test deterministik
 │   ├── train_table_chair.py    # entrypoint fine-tuning model kalibrasi
 │   ├── evaluate_table_chair.py # precision/recall/mAP per class held-out

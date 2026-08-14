@@ -35,6 +35,22 @@ python dataset/prepare_open_images.py `
   --max-images 128
 ```
 
+Untuk menyiapkan preview lokal sebelum review manual, jalankan downloader
+terpisah berikut:
+
+```powershell
+python dataset/download_candidate_previews.py `
+  --input data/open_images/processed/candidates_validation.csv `
+  --output-dir data/open_images/preview
+```
+
+Image preview dan `preview_manifest.csv` ditulis ke `data/open_images/preview/`
+yang di-ignore Git. Downloader hanya menyalin status review ke manifest dan
+tidak pernah mengubah `curation_status`, `license_verified`, atau
+`scene_verified`. Buka preview dan landing URL sumber untuk memverifikasi
+lisensi serta relevansi indoor/seating secara manual; hanya reviewer manusia
+yang boleh mengisi ketiga flag tersebut.
+
 Review `data/open_images/processed/candidates_validation.csv`. Untuk setiap
 gambar yang benar-benar boleh dipakai, isi:
 
