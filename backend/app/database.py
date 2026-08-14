@@ -1,12 +1,14 @@
 """Database engine, session factory, and declarative base for Basir AI."""
 
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-load_dotenv()
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(_PROJECT_ROOT / ".env")
 
 # psycopg v3 driver requires the +psycopg dialect suffix.
 # Fall back to a local dev URL if DATABASE_URL is not set.

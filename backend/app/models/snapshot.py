@@ -33,4 +33,6 @@ class Snapshot(Base):
     )
 
     # relationships
-    cafe: Mapped["Cafe"] = relationship("Cafe", back_populates="snapshots")  # noqa: F821
+    cafe: Mapped["Cafe"] = relationship(  # noqa: F821
+        "Cafe", back_populates="snapshots"
+    )

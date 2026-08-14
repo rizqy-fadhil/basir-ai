@@ -94,7 +94,11 @@ def _base_manifest(args: argparse.Namespace, run_dir: Path) -> dict[str, Any]:
             "coordinate_format": "YOLO normalized xywh",
             "source_filter": "Open Images V7 Table/Chair; group-of and depiction boxes excluded",
         },
-        "split": {"train": "images/train", "validation": "images/validation"},
+        "split": {
+            "train": "images/train",
+            "validation": "images/validation",
+            "test": "images/test",
+        },
         "hyperparameters": {
             "epochs": args.epochs,
             "batch": args.batch,
@@ -179,9 +183,9 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.epochs <= 0 or args.imgsz <= 0 or args.batch == 0 or args.workers < 0:
+    if args.epochs <= 0 or args.imgsz <= 0 or args.batch <= 0 or args.workers < 0:
         print(
-            "ERROR: epochs, imgsz, dan workers harus valid; batch tidak boleh 0",
+            "ERROR: epochs, imgsz, batch harus positif dan workers tidak boleh negatif",
             file=sys.stderr,
         )
         return 2

@@ -77,7 +77,9 @@ def seed() -> None:
         # ---- cafe ----
         existing_cafe = db.get(Cafe, CAFE_DATA["id"])
         if existing_cafe is not None:
-            log.info("Cafe id=%d already exists — skipping cafe insert.", CAFE_DATA["id"])
+            log.info(
+                "Cafe id=%d already exists — skipping cafe insert.", CAFE_DATA["id"]
+            )
             cafe = existing_cafe
         else:
             cafe = Cafe(**CAFE_DATA)

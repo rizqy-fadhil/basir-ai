@@ -30,7 +30,9 @@ class StatusEnum(str, Enum):
 class StatusUpsertRequest(BaseModel):
     """Payload sent by the inference service when occupancy is updated."""
 
-    meja_id: int = Field(..., gt=0, description="Primary key of the meja being updated.")
+    meja_id: int = Field(
+        ..., gt=0, description="Primary key of the meja being updated."
+    )
     terisi: int = Field(
         ...,
         ge=0,

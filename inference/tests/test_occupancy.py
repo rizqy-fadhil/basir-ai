@@ -13,7 +13,11 @@ from inference.occupancy import (
     calculate_occupancy,
     occupancy_status,
 )
-from inference.roi import build_shapely_geometries, load_roi_config
+from inference.roi import (
+    build_shapely_geometries,
+    load_roi_config,
+    map_point_to_table,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -72,9 +76,38 @@ class OccupancyTests(unittest.TestCase):
 
         self.assertTrue(all(table.terisi == 0 for table in snapshot.meja))
 
+    def test_person_outside_all_rois_is_ignored(self) -> None:
+        detection = PersonDetection((0, 0, 1, 1), 0.9)
+
+        snapshot = calculate_occupancy(
+            self.config, [detection], geometries=self.geometries
+        )
+
+        self.assertTrue(all(table.terisi == 0 for table in snapshot.meja))
+
     def test_invalid_bbox_is_rejected(self) -> None:
         with self.assertRaises(OccupancyInputError):
             bottom_center((1, 2, 0, 3))
+
+    def test_border_point_uses_first_roi_in_config_order(self) -> None:
+        detection = PersonDetection((15, 0, 15, 5), 0.9)
+
+        snapshot = calculate_occupancy(
+            self.config, [detection], geometries=self.geometries
+        )
+
+        self.assertEqual(snapshot.meja[0].terisi, 1)
+        self.assertEqual(snapshot.meja[1].terisi, 0)
+
+    def test_ambiguous_shared_border_uses_first_geometry(self) -> None:
+        from shapely.geometry import Polygon
+
+        geometries = {
+            1: Polygon([(0, 0), (1, 0), (1, 1), (0, 1)]),
+            2: Polygon([(1, 0), (2, 0), (2, 1), (1, 1)]),
+        }
+
+        self.assertEqual(map_point_to_table((1, 0.5), geometries), 1)
 
 
 if __name__ == "__main__":

@@ -9,9 +9,13 @@ from __future__ import annotations
 
 import math
 import os
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class DetectionConfigurationError(ValueError):
@@ -109,7 +113,14 @@ class PersonDetector:
         forwarded unchanged.
         """
 
+        payload = getattr(frame, "payload", frame)
+        if payload is None or (isinstance(payload, (bytes, bytearray)) and not payload):
+            LOGGER.warning("Frame kosong; person detector mengembalikan 0 deteksi.")
+            return ()
         source = _model_source(frame)
+        if source is None or (isinstance(source, (bytes, bytearray)) and not source):
+            LOGGER.warning("Frame kosong; person detector mengembalikan 0 deteksi.")
+            return ()
         try:
             results = self._model.predict(
                 source=source,
@@ -119,9 +130,10 @@ class PersonDetector:
                 verbose=False,
             )
         except Exception as exc:
-            raise DetectionInferenceError(
-                f"Inferensi person detector gagal: {exc}"
-            ) from exc
+            LOGGER.error(
+                "Inferensi person detector gagal; frame dianggap kosong: %s", exc
+            )
+            return ()
         return _parse_person_results(results, self.config)
 
     __call__ = predict

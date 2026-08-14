@@ -33,6 +33,7 @@ from app.models import Cafe, Meja, Snapshot, StatusMeja  # noqa: F401
 # Engine / schema per test
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def db_url(tmp_path: Path) -> str:
     """Return a unique SQLite file URL for this test."""
@@ -98,6 +99,7 @@ def client(db_url: str, db_engine) -> Generator[TestClient, None, None]:
 # ---------------------------------------------------------------------------
 # Data fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def cafe(db: Session) -> Cafe:

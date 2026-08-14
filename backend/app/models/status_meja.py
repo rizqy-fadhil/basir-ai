@@ -39,4 +39,6 @@ class StatusMeja(Base):
     )
 
     # relationships
-    meja: Mapped["Meja"] = relationship("Meja", back_populates="status_meja")  # noqa: F821
+    meja: Mapped["Meja"] = relationship(  # noqa: F821
+        "Meja", back_populates="status_meja"
+    )

@@ -39,6 +39,7 @@ target_metadata = Base.metadata
 # Migration runners
 # ---------------------------------------------------------------------------
 
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode (generates SQL without a live DB)."""
     url = config.get_main_option("sqlalchemy.url")

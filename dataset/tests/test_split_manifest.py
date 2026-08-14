@@ -79,7 +79,9 @@ class SplitManifestTests(unittest.TestCase):
             self.assertTrue(
                 (processed_dir / "splits" / "split_manifest.json").is_file()
             )
-            self.assertTrue((processed_dir / "data.yaml").is_file())
+            dataset_yaml = processed_dir / "data.yaml"
+            self.assertTrue(dataset_yaml.is_file())
+            self.assertIn("test: images/test", dataset_yaml.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

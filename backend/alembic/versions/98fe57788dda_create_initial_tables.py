@@ -95,9 +95,7 @@ def upgrade() -> None:
     op.create_table(
         "status_meja",
         sa.Column("meja_id", sa.BigInteger(), nullable=False),
-        sa.Column(
-            "terisi", sa.SmallInteger(), nullable=False, server_default="0"
-        ),
+        sa.Column("terisi", sa.SmallInteger(), nullable=False, server_default="0"),
         sa.Column("status", sa.String(16), nullable=False),
         sa.Column(
             "updated_at",
@@ -145,9 +143,7 @@ def upgrade() -> None:
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint(
-            "cafe_id", "area_kamera", name="uq_snapshot_cafe_area"
-        ),
+        sa.UniqueConstraint("cafe_id", "area_kamera", name="uq_snapshot_cafe_area"),
     )
     op.create_index("ix_snapshot_cafe_id", "snapshot", ["cafe_id"])
 

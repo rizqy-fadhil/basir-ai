@@ -109,7 +109,7 @@ def build_shapely_geometries(config: ROIConfig) -> dict[int, Any]:
 
 
 def map_point_to_table(point: Point, geometries: dict[int, Any]) -> int | None:
-    """Map a detection point to one ROI using Shapely ``covers``."""
+    """Map a point using Shapely ``covers``; first config ROI wins on borders."""
 
     try:
         from shapely.geometry import Point as ShapelyPoint
@@ -121,14 +121,10 @@ def map_point_to_table(point: Point, geometries: dict[int, Any]) -> int | None:
     if len(point) != 2 or not all(isfinite(value) for value in point):
         raise ROIConfigError(f"Titik deteksi tidak valid: {point!r}.")
     detection_point = ShapelyPoint(point)
-    matches = [
-        table_number
-        for table_number, polygon in geometries.items()
-        if polygon.covers(detection_point)
-    ]
-    if len(matches) > 1:
-        raise ROIConfigError(f"Titik {point!r} masuk ke beberapa ROI: {matches}.")
-    return matches[0] if matches else None
+    for table_number, polygon in geometries.items():
+        if polygon.covers(detection_point):
+            return table_number
+    return None
 
 
 def _parse_polygon(value: Any, field_name: str) -> tuple[Point, ...]:

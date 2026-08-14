@@ -103,10 +103,14 @@ class TestGetCafeStatus:
         earlier = datetime(2026, 8, 14, 5, 0, tzinfo=timezone.utc)
         later = datetime(2026, 8, 14, 6, 30, tzinfo=timezone.utc)
 
-        db.add_all([
-            StatusMeja(meja_id=m1.id, terisi=0, status="available", updated_at=earlier),
-            StatusMeja(meja_id=m2.id, terisi=1, status="partial", updated_at=later),
-        ])
+        db.add_all(
+            [
+                StatusMeja(
+                    meja_id=m1.id, terisi=0, status="available", updated_at=earlier
+                ),
+                StatusMeja(meja_id=m2.id, terisi=1, status="partial", updated_at=later),
+            ]
+        )
         db.commit()
 
         resp = client.get(f"/cafes/{cafe.id}/status")
@@ -217,7 +221,9 @@ class TestUpsertStatus:
 
     def test_rejects_missing_meja_id(self, client: TestClient):
         """Payload without meja_id must fail validation."""
-        resp = self._post(client, {"terisi": 0, "status": "available", "updated_at": VALID_UPDATED_AT})
+        resp = self._post(
+            client, {"terisi": 0, "status": "available", "updated_at": VALID_UPDATED_AT}
+        )
         assert resp.status_code == 422
 
     def test_404_for_unknown_meja(self, client: TestClient, cafe: Cafe):
@@ -226,7 +232,9 @@ class TestUpsertStatus:
         assert resp.status_code == 404
         assert "9999" in resp.json()["detail"]
 
-    def test_all_valid_status_values_accepted(self, client: TestClient, db: Session, cafe: Cafe):
+    def test_all_valid_status_values_accepted(
+        self, client: TestClient, db: Session, cafe: Cafe
+    ):
         """Each of the three allowed status values must be accepted."""
         for i, s in enumerate(["available", "partial", "occupied"], start=10):
             m = Meja(cafe_id=cafe.id, nomor_meja=i, kapasitas=2)

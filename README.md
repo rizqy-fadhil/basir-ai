@@ -23,6 +23,11 @@ context/         aturan kompetisi
 
 `occupancy-engine/` dilipat ke `inference/` sesuai arsitektur. `frontend/` tidak digunakan; nama canonical frontend adalah `web/`.
 
+Runtime AI berada di `inference/main.py`: mode `--once` menjalankan capture →
+person detection → occupancy → POST status ke backend. Model calibration hanya
+menghasilkan saran reviewable melalui `inference/calibration.py`; saran tidak
+pernah menggantikan `roi_config.json` tanpa konfirmasi manusia.
+
 ## Dokumentasi sumber
 
 - [PRD](PRD.md) — scope, user stories, dan acceptance criteria.
@@ -43,6 +48,17 @@ docker compose up -d db
 Perintah di atas hanya menyalakan PostgreSQL untuk fase fondasi. Service backend, inference, dan web akan diaktifkan setelah implementasi masing-masing tersedia.
 
 Fixture mock yang digunakan pada tahap ini adalah `dataset/mock/workspace.ppm`. File tersebut sintetis, hanya untuk pengujian lokal, dan tidak merepresentasikan rekaman cafe nyata.
+
+Untuk menjalankan satu cycle setelah dependency dan `.env` siap:
+
+```powershell
+python -m inference.main --once
+```
+
+Jika backend tidak tersedia atau satu meja gagal di-update, cycle mencatat
+error lalu melanjutkan tanpa menghentikan proses meja lainnya. Endpoint internal
+menggunakan `X-API-Key` dan payload status yang didokumentasikan di
+`ARCHITECTURE.md`.
 
 ## Aturan pengembangan
 

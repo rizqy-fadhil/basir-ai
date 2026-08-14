@@ -13,7 +13,9 @@ from app.models import Cafe, Snapshot
 class TestListSnapshot:
     """GET /cafes/{cafe_id}/snapshot"""
 
-    def _make_snapshot(self, db: Session, cafe_id: int, area: str = "workspace-1") -> Snapshot:
+    def _make_snapshot(
+        self, db: Session, cafe_id: int, area: str = "workspace-1"
+    ) -> Snapshot:
         s = Snapshot(
             cafe_id=cafe_id,
             area_kamera=area,

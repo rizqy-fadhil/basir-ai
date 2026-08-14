@@ -2,7 +2,14 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, ForeignKey, SmallInteger, UniqueConstraint, func
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    ForeignKey,
+    SmallInteger,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base

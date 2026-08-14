@@ -78,6 +78,13 @@ class PersonDetectorTests(unittest.TestCase):
 
         self.assertEqual(detector.predict(b"frame"), ())
 
+    def test_empty_frame_does_not_call_model(self) -> None:
+        model = _FakeModel([])
+        detector = PersonDetector(PersonDetectorConfig(), model=model)
+
+        self.assertEqual(detector.predict(b""), ())
+        self.assertEqual(model.calls, [])
+
     def test_mock_frame_path_is_forwarded_to_model(self) -> None:
         fixture = (
             Path(__file__).resolve().parents[2] / "dataset" / "mock" / "workspace.ppm"

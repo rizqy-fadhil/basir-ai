@@ -201,9 +201,9 @@ def run_evaluation(args: argparse.Namespace) -> dict[str, Any]:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.imgsz <= 0 or args.batch == 0 or args.workers < 0:
+    if args.imgsz <= 0 or args.batch <= 0 or args.workers < 0:
         print(
-            "ERROR: imgsz harus positif, batch tidak boleh 0, workers tidak boleh negatif",
+            "ERROR: imgsz dan batch harus positif, workers tidak boleh negatif",
             file=sys.stderr,
         )
         return 2

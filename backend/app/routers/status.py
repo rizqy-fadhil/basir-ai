@@ -69,9 +69,7 @@ def get_cafe_status(cafe_id: int, db: Session = Depends(get_db)) -> OkupansiResp
         terisi = sm.terisi if sm else 0
         meja_status = sm.status if sm else None
 
-        if sm and (
-            latest_updated_at is None or sm.updated_at > latest_updated_at
-        ):
+        if sm and (latest_updated_at is None or sm.updated_at > latest_updated_at):
             latest_updated_at = sm.updated_at
 
         total_kapasitas += meja.kapasitas
@@ -106,7 +104,9 @@ def get_cafe_status(cafe_id: int, db: Session = Depends(get_db)) -> OkupansiResp
 _BACKEND_API_KEY: str = os.environ.get("BACKEND_API_KEY", "")
 
 
-def _verify_api_key(x_api_key: str | None = Header(default=None, alias="X-API-Key")) -> None:
+def _verify_api_key(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key")
+) -> None:
     """Dependency: validate the X-API-Key header against BACKEND_API_KEY env var."""
     if not _BACKEND_API_KEY:
         # If the server is misconfigured (no key set), deny all requests to

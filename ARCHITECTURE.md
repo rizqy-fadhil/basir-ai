@@ -35,6 +35,7 @@ Baca ini sebelum generate kode apa pun untuk proyek ini:
 | Scheduler | APScheduler | 3.10.x | Trigger inference sesuai interval |
 | Storage client | boto3 | 1.34.x | S3-compatible storage |
 | Env config | python-dotenv | 1.0.x | Membaca `.env` |
+| HTTP client | httpx | 0.27.x | Mengirim status inference ke backend |
 | Testing | pytest | 8.x | Test Python |
 | Lint/format | ruff + black | ruff 0.5.x, black 24.x | Validasi sebelum commit |
 
@@ -113,6 +114,7 @@ Detector table-chair tidak dijalankan pada setiap frame runtime. Dengan demikian
 basir-ai/
 ├── inference/                  # Python — capture, detection, occupancy engine
 │   ├── main.py                 # entrypoint scheduler
+│   ├── calibration.py          # saran ROI table/chair; wajib review manual
 │   ├── capture.py              # ambil frame dari RTSP atau mock file
 │   ├── detect.py               # jalankan YOLOv8n
 │   ├── roi.py                  # mapping bounding box -> ROI (shapely)
@@ -200,10 +202,16 @@ YOLO_PERSON_CLASS_ID=0
 YOLO_PERSON_CONFIDENCE_THRESHOLD=0.40
 YOLO_CALIBRATION_MODEL_PATH=inference/models/table-chair-best.pt
 YOLO_CALIBRATION_CONFIDENCE_THRESHOLD=0.35
+CALIBRATION_CHAIR_DISTANCE_FACTOR=1.5
 YOLO_IOU_THRESHOLD=0.45
 YOLO_IMAGE_SIZE=640
 MOCK_MODE=true
 MOCK_FRAME_PATH=dataset/mock/workspace.ppm
+CAFE_ID=1
+ROI_CONFIG_PATH=inference/config/roi_config.json
+BACKEND_API_URL=http://localhost:8000
+BACKEND_REQUEST_TIMEOUT_SECONDS=10
+BACKEND_RETRY_COUNT=1
 
 # backend API
 DATABASE_URL=postgresql://user:pass@db:5432/basirai
@@ -233,10 +241,25 @@ Base URL: `NEXT_PUBLIC_API_BASE_URL`. Semua response JSON memakai `snake_case`.
 
 | Method | Endpoint | Deskripsi | Dipanggil oleh |
 |---|---|---|---|
-| `POST` | `/internal/status` | Inference service mengirim status per meja dan URL snapshot | inference service, memakai `BACKEND_API_KEY` |
+| `POST` | `/internal/status` | Inference service mengirim status okupansi per meja | inference service, memakai `BACKEND_API_KEY` |
 | `GET` | `/cafes/{cafe_id}/status` | Status okupansi terkini dan daftar meja | web dashboard, polling |
 | `GET` | `/cafes/{cafe_id}/snapshot` | URL snapshot terbaru | web dashboard |
 | `GET` | `/cafes/{cafe_id}/meja` | Daftar meja, kapasitas, dan ROI | tooling internal |
+
+Payload `POST /internal/status` wajib mengikuti kontrak berikut:
+
+```json
+{
+  "meja_id": 12,
+  "terisi": 1,
+  "status": "partial",
+  "updated_at": "2026-08-14T06:00:00Z"
+}
+```
+
+Response sukses berbentuk `{"action": "inserted"|"updated", "meja_id": 12}`.
+API key dikirim melalui header `X-API-Key`; HTTP 401, 404, atau 422 dicatat
+sebagai kegagalan meja/cycle sesuai titik error tanpa menghentikan meja lain.
 
 Contoh `GET /cafes/{cafe_id}/status`:
 

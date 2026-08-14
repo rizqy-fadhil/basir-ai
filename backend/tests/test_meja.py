@@ -11,7 +11,9 @@ from app.models import Cafe, Meja
 class TestListMeja:
     """GET /cafes/{cafe_id}/meja"""
 
-    def test_returns_active_mejas(self, client: TestClient, cafe: Cafe, db: Session, meja: Meja):
+    def test_returns_active_mejas(
+        self, client: TestClient, cafe: Cafe, db: Session, meja: Meja
+    ):
         """Should return all active mejas for a valid cafe."""
         m2 = Meja(cafe_id=cafe.id, nomor_meja=2, kapasitas=4)
         db.add(m2)
