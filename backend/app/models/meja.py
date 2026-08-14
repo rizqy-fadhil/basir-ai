@@ -3,10 +3,10 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, CheckConstraint, ForeignKey, SmallInteger, UniqueConstraint, func
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+from app.types import JsonbOrJson
 
 
 class Meja(Base):
@@ -24,8 +24,8 @@ class Meja(Base):
     )
     nomor_meja: Mapped[int] = mapped_column(nullable=False)
     kapasitas: Mapped[int] = mapped_column(SmallInteger, nullable=False)
-    roi: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    aktif: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
+    roi: Mapped[dict | None] = mapped_column(JsonbOrJson, nullable=True)
+    aktif: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[datetime] = mapped_column(
         nullable=False, server_default=func.now()
     )

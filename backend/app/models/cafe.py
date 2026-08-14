@@ -19,7 +19,7 @@ class Cafe(Base):
     timezone: Mapped[str] = mapped_column(
         String(64), nullable=False, server_default="Asia/Jakarta"
     )
-    aktif: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
+    aktif: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[datetime] = mapped_column(
         nullable=False, server_default=func.now()
     )
