@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-ink text-oat antialiased;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans text-base leading-relaxed;
+    min-height: 100dvh;
+  }
+
+  /* Focus visible — warna status meja diatur per komponen */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-scan;
+  }
+}
+
+@layer components {
+  /* ── Viewfinder corners ─────────────────────────────── */
+  .viewfinder {
+    position: relative;
+  }
+
+  .viewfinder::before,
+  .viewfinder::after,
+  .viewfinder > .vf-bl,
+  .viewfinder > .vf-br {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+  }
+
+  /* Top-left */
+  .viewfinder::before {
+    top: 0;
+    left: 0;
+    border-top: 2px solid var(--vf-color, theme("colors.scan"));
+    border-left: 2px solid var(--vf-color, theme("colors.scan"));
+  }
+
+  /* Top-right */
+  .viewfinder::after {
+    top: 0;
+    right: 0;
+    border-top: 2px solid var(--vf-color, theme("colors.scan"));
+    border-right: 2px solid var(--vf-color, theme("colors.scan"));
+  }
+
+  /* Bottom-left */
+  .viewfinder > .vf-bl {
+    bottom: 0;
+    left: 0;
+    border-bottom: 2px solid var(--vf-color, theme("colors.scan"));
+    border-left: 2px solid var(--vf-color, theme("colors.scan"));
+  }
+
+  /* Bottom-right */
+  .viewfinder > .vf-br {
+    bottom: 0;
+    right: 0;
+    border-bottom: 2px solid var(--vf-color, theme("colors.scan"));
+    border-right: 2px solid var(--vf-color, theme("colors.scan"));
+  }
+
+  /* Hover/tap: corners tighten inward */
+  .viewfinder-interactive {
+    --vf-inset: 0px;
+    transition: --vf-inset 150ms ease-out;
+  }
+
+  .viewfinder-interactive::before {
+    top: var(--vf-inset);
+    left: var(--vf-inset);
+  }
+  .viewfinder-interactive::after {
+    top: var(--vf-inset);
+    right: var(--vf-inset);
+  }
+  .viewfinder-interactive > .vf-bl {
+    bottom: var(--vf-inset);
+    left: var(--vf-inset);
+  }
+  .viewfinder-interactive > .vf-br {
+    bottom: var(--vf-inset);
+    right: var(--vf-inset);
+  }
+
+  .viewfinder-interactive:hover,
+  .viewfinder-interactive:focus-within {
+    --vf-inset: 4px;
+  }
+
+  /* ── Scanline overlay ───────────────────────────────── */
+  .scanline-overlay {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .scanline-overlay::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 3px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      theme("colors.scan / 60%") 20%,
+      theme("colors.scan") 50%,
+      theme("colors.scan / 60%") 80%,
+      transparent 100%
+    );
+    box-shadow: 0 0 12px 2px theme("colors.scan / 40%");
+    animation: scanline 1.2s ease-out forwards;
+  }
+
+  /* ── Reduced motion ─────────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .scanline-overlay::after {
+      animation: none;
+      opacity: 0;
+    }
+
+    .viewfinder-interactive {
+      transition: none;
+    }
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
