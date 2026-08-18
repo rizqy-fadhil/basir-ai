@@ -101,21 +101,25 @@ def get_cafe_status(cafe_id: int, db: Session = Depends(get_db)) -> OkupansiResp
 # POST /internal/status
 # ---------------------------------------------------------------------------
 
-_BACKEND_API_KEY: str = os.environ.get("BACKEND_API_KEY", "")
-
 
 def _verify_api_key(
     x_api_key: str | None = Header(default=None, alias="X-API-Key")
 ) -> None:
-    """Dependency: validate the X-API-Key header against BACKEND_API_KEY env var."""
-    if not _BACKEND_API_KEY:
+    """Dependency: validate the X-API-Key header against BACKEND_API_KEY env var.
+
+    The key is read lazily at request time (not at module-import time) so that
+    the value loaded from .env by database.py is always visible here, regardless
+    of module import order.
+    """
+    backend_api_key: str = os.environ.get("BACKEND_API_KEY", "")
+    if not backend_api_key:
         # If the server is misconfigured (no key set), deny all requests to
         # prevent accidental open access.
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="BACKEND_API_KEY tidak dikonfigurasi di server.",
         )
-    if x_api_key != _BACKEND_API_KEY:
+    if x_api_key != backend_api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="X-API-Key tidak valid atau tidak diberikan.",

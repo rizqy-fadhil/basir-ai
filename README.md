@@ -7,9 +7,10 @@ Basir AI adalah MVP sistem ketersediaan meja workspace cafe. Kamera area workspa
 Fondasi teknis, kontrak model, dan pipeline reproducible untuk menyiapkan
 dataset Table–Chair sudah tersedia. Pipeline inference runtime dan occupancy
 engine memiliki detector person serta penghitungan status per ROI yang teruji
-dengan fixture mock. Fine-tuning table-chair masih menunggu review manual
-dataset, artifact gambar, dan environment training; bobot atau metric belum
-diklaim sebelum eksperimen held-out benar-benar dijalankan.
+dengan fixture mock. Backend API (4 endpoint, 29 unit test) tersedia dan
+dapat dijalankan via Docker Compose. Fine-tuning table-chair masih menunggu
+review manual dataset, artifact gambar, dan environment training; bobot atau
+metric belum diklaim sebelum eksperimen held-out benar-benar dijalankan.
 
 ## Struktur canonical
 
@@ -36,20 +37,51 @@ pernah menggantikan `roi_config.json` tanpa konfirmasi manusia.
 - [Design](DESIGN.md) — token visual, layout, copy, dan aksesibilitas.
 - [Competition rules](context/COMPETITION_RULES.md) — batas kepatuhan, reproducibility, dan integritas demo.
 
-## Menjalankan fondasi lokal
+## Menjalankan lokal via Docker Compose
 
 Prasyarat: Docker Desktop dengan Docker Compose v2.
 
 ```powershell
+# 1. Salin file konfigurasi lingkungan
 Copy-Item .env.example .env
-docker compose up -d db
+
+# 2. Jalankan database + backend (migrasi berjalan otomatis)
+docker compose up --build -d
+
+# 3. (Opsional) Jalankan seed data untuk data demo
+docker compose exec backend python -m app.seed
 ```
 
-Perintah di atas hanya menyalakan PostgreSQL untuk fase fondasi. Service backend, inference, dan web akan diaktifkan setelah implementasi masing-masing tersedia.
+Setelah `docker compose up` selesai:
 
-Fixture mock yang digunakan pada tahap ini adalah `dataset/mock/workspace.ppm`. File tersebut sintetis, hanya untuk pengujian lokal, dan tidak merepresentasikan rekaman cafe nyata.
+| Service  | URL                            |
+|----------|-------------------------------|
+| Backend API | http://localhost:8000       |
+| API Docs    | http://localhost:8000/docs  |
+| Health      | http://localhost:8000/health|
 
-Untuk menjalankan satu cycle setelah dependency dan `.env` siap:
+**Catatan seed data**: Seed tidak berjalan otomatis. Jalankan `docker compose exec backend python -m app.seed` untuk mengisi data demo (cafe dan meja). Tanpa seed, endpoint `/cafes/{id}/status` akan mengembalikan 404 karena belum ada data cafe.
+
+## Menjalankan backend secara lokal (tanpa Docker)
+
+```powershell
+cd backend
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+# Pastikan PostgreSQL lokal berjalan dan DATABASE_URL di .env sudah benar
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+Untuk menjalankan unit test (tidak memerlukan PostgreSQL — menggunakan SQLite):
+
+```powershell
+cd backend
+.\venv\Scripts\python.exe -m pytest tests/ -v
+```
+
+Untuk menjalankan satu cycle inference setelah dependency dan `.env` siap:
 
 ```powershell
 python -m inference.main --once

@@ -1,0 +1,23 @@
+# Python virtual environments — dependencies are installed inside the image
+venv/
+.venv/
+env/
+
+# Test and cache artifacts — not needed at runtime
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyc
+
+# Local SQLite test databases
+*.db
+*.sqlite3
+
+# Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
