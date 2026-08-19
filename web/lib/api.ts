@@ -1,18 +1,18 @@
 // ─── Types (sesuai ARCHITECTURE.md section 8 API contract) ───
 
-export type MejaStatus = "available" | "partial" | "occupied";
+export type MejaStatus = "available" | "partial" | "occupied" | null;
 
 export interface Meja {
   nomor_meja: number;
   kapasitas: number;
   terisi: number;
-  status: MejaStatus;
+  status: MejaStatus;  // null when AI inference hasn't run yet
 }
 
 export interface CafeStatus {
   cafe_id: number;
-  okupansi_persen: number;
-  updated_at: string;
+  okupansi_persen: number | null;
+  updated_at: string | null;
   snapshot_url?: string;
   meja: Meja[];
 }
@@ -46,11 +46,13 @@ export function statusLabel(status: MejaStatus): string {
       return "Sebagian Terisi";
     case "occupied":
       return "Penuh";
+    default:
+      return "Belum ada data";
   }
 }
 
 /** Map API status ke Tailwind color key */
-export type StatusColorKey = "scan" | "amber" | "ember";
+export type StatusColorKey = "scan" | "amber" | "ember" | "neutral";
 
 export function statusColor(status: MejaStatus): StatusColorKey {
   switch (status) {
@@ -60,13 +62,17 @@ export function statusColor(status: MejaStatus): StatusColorKey {
       return "amber";
     case "occupied":
       return "ember";
+    default:
+      return "neutral";
   }
 }
 
 // ─── Time helpers ────────────────────────────────────────────
 
 /** Format timestamp ke "X menit lalu" */
-export function timeAgo(isoString: string): string {
+export function timeAgo(isoString: string | null | undefined): string {
+  if (!isoString) return "Menunggu data";
+
   const diff = Date.now() - new Date(isoString).getTime();
   const seconds = Math.floor(diff / 1000);
 

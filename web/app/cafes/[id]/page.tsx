@@ -90,7 +90,7 @@ export default function CafeDashboard({ params }: PageProps) {
         {/* Hero snapshot */}
         <SnapshotHero
           snapshotUrl={data!.snapshot_url}
-          updatedAt={data!.updated_at}
+          updatedAt={data!.updated_at ?? undefined}
         />
 
         {/* Occupancy bar */}

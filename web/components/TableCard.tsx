@@ -22,6 +22,11 @@ const colorMap = {
     badge: "bg-ember/15 text-ember",
     focusRing: "focus-visible:outline-ember",
   },
+  neutral: {
+    vf: "#8B8B8B",
+    badge: "bg-oat/10 text-oat/50",
+    focusRing: "focus-visible:outline-oat/40",
+  },
 } as const;
 
 export default function TableCard({ meja }: TableCardProps) {

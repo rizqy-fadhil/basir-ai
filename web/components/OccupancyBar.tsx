@@ -1,17 +1,21 @@
 "use client";
 
 interface OccupancyBarProps {
-  /** Percentage 0–100 */
-  percentage: number;
+  /** Percentage 0–100, or null if AI data not yet available */
+  percentage: number | null;
 }
 
 export default function OccupancyBar({ percentage }: OccupancyBarProps) {
-  const clamped = Math.max(0, Math.min(100, percentage));
+  const isNull = percentage === null || percentage === undefined;
+  const clamped = isNull ? 0 : Math.max(0, Math.min(100, percentage));
 
   // Color tier per DESIGN.md
   let barColor: string;
   let barBg: string;
-  if (clamped < 50) {
+  if (isNull) {
+    barColor = "bg-oat/30";
+    barBg = "bg-oat/10";
+  } else if (clamped < 50) {
     barColor = "bg-scan";
     barBg = "bg-scan/20";
   } else if (clamped <= 80) {
@@ -29,8 +33,14 @@ export default function OccupancyBar({ percentage }: OccupancyBarProps) {
           Okupansi cafe
         </span>
         <span className="font-mono text-hero-number tabular-nums text-oat">
-          {clamped}
-          <span className="text-2xl text-oat/60">%</span>
+          {isNull ? (
+            <span className="text-2xl text-oat/40">—</span>
+          ) : (
+            <>
+              {clamped}
+              <span className="text-2xl text-oat/60">%</span>
+            </>
+          )}
         </span>
       </div>
 
@@ -38,18 +48,26 @@ export default function OccupancyBar({ percentage }: OccupancyBarProps) {
       <div
         className={`h-2.5 w-full overflow-hidden rounded-full ${barBg}`}
         role="progressbar"
-        aria-valuenow={clamped}
+        aria-valuenow={isNull ? undefined : clamped}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={`Okupansi cafe: ${clamped}%`}
+        aria-label={isNull ? "Okupansi cafe: Menunggu data" : `Okupansi cafe: ${clamped}%`}
       >
-        <div
-          className={`h-full rounded-full ${barColor} animate-fill-bar`}
-          style={
-            { "--fill-width": `${clamped}%`, width: `${clamped}%` } as React.CSSProperties
-          }
-        />
+        {!isNull && (
+          <div
+            className={`h-full rounded-full ${barColor} animate-fill-bar`}
+            style={
+              { "--fill-width": `${clamped}%`, width: `${clamped}%` } as React.CSSProperties
+            }
+          />
+        )}
       </div>
+
+      {isNull && (
+        <p className="font-mono text-caption text-oat/40">
+          Menunggu data dari sistem deteksi
+        </p>
+      )}
     </div>
   );
 }
