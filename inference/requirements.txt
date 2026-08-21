@@ -2,6 +2,7 @@ fastapi==0.111.1
 uvicorn[standard]==0.30.1
 pydantic==2.7.4
 ultralytics==8.2.48
+PyYAML==6.0.2
 opencv-python-headless==4.10.0.84
 shapely==2.0.4
 APScheduler==3.10.4

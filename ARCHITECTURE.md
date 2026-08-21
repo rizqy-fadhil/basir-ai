@@ -69,10 +69,22 @@ Person detector adalah pretrained supporting component dari Ultralytics dan tida
 
 ### Sumber dan penggunaan dataset fine-tuning
 
-- Dataset awal: subset `Table` dan `Chair` dari [Open Images V7](https://storage.googleapis.com/openimages/web/factsfigures_v7.html), dikurasi untuk adegan indoor/seating.
-- Anotasi Open Images berada di bawah CC BY 4.0; lisensi dan atribusi setiap gambar harus diverifikasi dari metadata sumber sebelum dipakai.
-- Image, label, dan bobot hasil training tidak dimasukkan ke repository secara otomatis. Repository menyimpan provenance, daftar image ID, lisensi, preprocessing, split, parameter training, metrik held-out, dan checksum bobot.
-- Data sintetis atau data dengan lisensi tidak jelas tidak boleh dipresentasikan sebagai data cafe nyata.
+- Pendekatan awal subset `Table`/`Chair` Open Images V7 dihentikan sebelum
+  training karena kandidat hasil query/filter tidak relevan.
+- Sumber run darurat: dataset publik `restaurant inference` version 1 dari
+  [Roboflow Universe](https://universe.roboflow.com/datasetvision/restaurant-inference),
+  author/workspace `datasetvision`, lisensi yang tercantum `CC BY 4.0`, dan
+  export object detection YOLOv8.
+- Export berisi class `chair`, `customer`, `staff`, dan `table`. Pipeline
+  menyimpan seluruh gambar secara lokal, membuang box `customer`/`staff`, lalu
+  meremap `table=0` dan `chair=1` untuk model calibration.
+- Image, label, dan bobot hasil training tidak dimasukkan ke repository secara
+  otomatis. Repository menyimpan skrip konversi, provenance, lisensi,
+  preprocessing, split, parameter training, metrik held-out, dan checksum
+  bobot; dataset mentah berada di `data/roboflow/` dan di-ignore.
+- Data sintetis atau data dengan lisensi tidak jelas tidak boleh dipresentasikan
+  sebagai data cafe nyata. Lisensi dataset dari halaman Roboflow tetap harus
+  dibawa bersama atribusi sesuai rule kompetisi.
 
 ### Alur kalibrasi ROI
 
@@ -127,7 +139,8 @@ basir-ai/
 │   └── requirements.txt
 │
 ├── dataset/                    # pipeline dataset; sumber dan lisensi wajib dicatat
-│   ├── prepare_open_images.py  # kandidat + konversi Open Images ke YOLO
+│   ├── prepare_open_images.py  # pipeline Open Images lama; tidak dipakai run darurat
+│   ├── prepare_roboflow_table_chair.py # filter class + konversi export Roboflow
 │   ├── download_candidate_previews.py # preview lokal; tidak memverifikasi curation
 │   ├── split_manifest.py       # split train/validation/test deterministik
 │   ├── train_table_chair.py    # entrypoint fine-tuning model kalibrasi

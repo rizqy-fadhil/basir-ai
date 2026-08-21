@@ -36,6 +36,7 @@ snapshots/
 data/raw/
 data/processed/
 data/open_images/
+data/roboflow/
 data/runs/
 runs/
 dataset/private/

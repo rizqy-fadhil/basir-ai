@@ -12,6 +12,7 @@ from typing import Any, Mapping, Sequence
 
 
 LOGGER = logging.getLogger(__name__)
+# Must match dataset/prepare_roboflow_table_chair.py output.
 TABLE_CLASS_ID = 0
 CHAIR_CLASS_ID = 1
 

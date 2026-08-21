@@ -14,6 +14,7 @@ from typing import Any, Mapping, Sequence
 
 
 CLASS_MAPPING = {"0": "table", "1": "chair"}
+EXPECTED_CLASS_NAMES = ("table", "chair")
 
 
 def _json_safe(value: Any) -> Any:
@@ -43,7 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--data",
         type=Path,
         default=Path("data/open_images/processed/data.yaml"),
-        help="Ultralytics dataset YAML yang dihasilkan oleh prepare_open_images.py",
+        help="Ultralytics dataset YAML dua class table/chair",
     )
     parser.add_argument(
         "--model",
@@ -81,18 +82,61 @@ def _manifest_path(args: argparse.Namespace, run_dir: Path) -> Path:
     return args.manifest_out or (run_dir / "training_manifest.json")
 
 
+def _dataset_metadata(data_path: Path) -> dict[str, Any]:
+    """Read lightweight YAML metadata without making training depend on it early."""
+
+    try:
+        import yaml
+    except ImportError:
+        return {}
+    try:
+        document = yaml.safe_load(data_path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError):
+        return {}
+    if isinstance(document, dict) and isinstance(document.get("roboflow"), Mapping):
+        return document
+    preparation_path = data_path.parent / "preparation_manifest.json"
+    try:
+        preparation = json.loads(preparation_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return document if isinstance(document, dict) else {}
+    if not isinstance(preparation, dict):
+        return document if isinstance(document, dict) else {}
+    return {
+        "roboflow": {
+            "source_dataset": preparation.get("source_dataset"),
+            "source_url": preparation.get("source_url"),
+            "author": preparation.get("author"),
+            "license": preparation.get("license"),
+            "source_archive_sha256": preparation.get("source_archive_sha256"),
+            "source_class_names": preparation.get("source_class_names"),
+            "target_class_mapping": preparation.get("target_class_mapping"),
+        }
+    }
+
+
+def _provenance_path(data_path: Path) -> str | None:
+    for filename in ("provenance.csv", "provenance_train.csv"):
+        path = data_path.parent / filename
+        if path.is_file():
+            return str(path)
+    return None
+
+
 def _base_manifest(args: argparse.Namespace, run_dir: Path) -> dict[str, Any]:
     data_path = args.data.resolve()
+    dataset_metadata = _dataset_metadata(data_path)
     return {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "base_model": args.model,
         "class_mapping": CLASS_MAPPING,
         "dataset_yaml": str(data_path),
-        "provenance_file": str(data_path.parent / "provenance_train.csv"),
+        "provenance_file": _provenance_path(data_path),
+        "dataset_metadata": dataset_metadata.get("roboflow", {}),
         "preprocessing": {
             "image_size": args.imgsz,
             "coordinate_format": "YOLO normalized xywh",
-            "source_filter": "Open Images V7 Table/Chair; group-of and depiction boxes excluded",
+            "source_filter": "dataset-specific; see dataset_metadata and provenance_file",
         },
         "split": {
             "train": "images/train",
@@ -128,11 +172,30 @@ def _require_training_artifacts(data_path: Path) -> None:
         )
 
 
+def _require_table_chair_classes(data_path: Path) -> None:
+    document = _dataset_metadata(data_path)
+    names = document.get("names")
+    if isinstance(names, Mapping):
+        ordered_names = [
+            str(value)
+            for _, value in sorted(names.items(), key=lambda item: int(item[0]))
+        ]
+    elif isinstance(names, Sequence) and not isinstance(names, (str, bytes)):
+        ordered_names = [str(value) for value in names]
+    else:
+        raise RuntimeError("dataset YAML tidak memiliki mapping names yang valid")
+    if tuple(name.casefold() for name in ordered_names) != EXPECTED_CLASS_NAMES:
+        raise RuntimeError(
+            "dataset YAML harus memiliki tepat dua class dengan urutan table, chair; "
+            f"ditemukan: {ordered_names}"
+        )
+
+
 def run_training(args: argparse.Namespace) -> dict[str, Any]:
     if not args.data.is_file() and not args.dry_run:
         raise RuntimeError(
             f"dataset YAML tidak ditemukan: {args.data}. "
-            "Jalankan prepare_open_images.py setelah curation disetujui."
+            "Siapkan dataset dengan pipeline dataset yang terdokumentasi."
         )
     run_dir = args.project / args.name
     manifest = _base_manifest(args, run_dir)
@@ -141,6 +204,7 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
         manifest["status"] = "dry-run"
         return manifest
     _require_training_artifacts(args.data)
+    _require_table_chair_classes(args.data)
     try:
         from ultralytics import YOLO
     except ImportError as exc:
@@ -173,11 +237,11 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
         sha256_file(best_weights) if best_weights.is_file() else None
     )
     manifest_path = _manifest_path(args, actual_run_dir)
+    manifest["manifest_path"] = str(manifest_path)
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    manifest["manifest_path"] = str(manifest_path)
     return manifest
 
 
