@@ -30,6 +30,7 @@ Baca ini sebelum generate kode apa pun untuk proyek ini:
 | Database | PostgreSQL | 15 | Database MVP yang mudah direproduksi |
 | PostgreSQL driver | psycopg | 3.2.x | Driver SQLAlchemy untuk PostgreSQL |
 | Object detection | Ultralytics (YOLOv8) | 8.2.x, model `yolov8n.pt` | Model ringan untuk satu kamera |
+| Runtime tensor | PyTorch + torchvision | 2.3.1+cpu / 0.18.1+cpu | Versi CPU yang dipin untuk image inference |
 | Computer vision util | OpenCV (`opencv-python-headless`) | 4.10.x | Baca stream, resize, dan encode frame |
 | Geometri ROI | Shapely | 2.0.x | Point-in-polygon yang teruji |
 | Scheduler | APScheduler | 3.10.x | Trigger inference sesuai interval |
@@ -115,8 +116,12 @@ Detector table-chair tidak dijalankan pada setiap frame runtime. Dengan demikian
 ### Model artifact dan evaluasi
 
 - `yolov8n.pt` adalah bobot person runtime.
-- `inference/models/table-chair-best.pt` adalah bobot fine-tuned calibration yang diunduh dari GitHub Release, bukan file yang diasumsikan sudah tersedia sebelum training selesai.
-- Setiap release model wajib menyertakan SHA-256 checksum dan training manifest yang mencatat base model, class mapping, dataset/provenance, preprocessing, split, hyperparameter, dan hasil evaluasi.
+- `inference/models/table-chair-best.pt` adalah lokasi bobot fine-tuned calibration
+  lokal dan tetap di-ignore Git. Artifact run saat ini dicatat di
+  `dataset/README.md`; bila dibagikan sebagai GitHub Release asset, release
+  tersebut wajib menyertakan SHA-256 checksum dan training manifest.
+- Setiap distribusi model wajib menyertakan base model, class mapping,
+  dataset/provenance, preprocessing, split, hyperparameter, dan hasil evaluasi.
 - Evaluasi calibration detector wajib mencakup precision, recall, dan mAP per class pada held-out split, serta pemeriksaan manual kualitas saran ROI dan jumlah kursi.
 - Tidak boleh ada klaim fine-tuning, akurasi, atau peningkatan performa sebelum eksperimen benar-benar dijalankan dan hasilnya disimpan.
 
@@ -127,7 +132,7 @@ basir-ai/
 ├── inference/                  # Python — capture, detection, occupancy engine
 │   ├── main.py                 # entrypoint scheduler
 │   ├── calibration.py          # saran ROI table/chair; wajib review manual
-│   ├── capture.py              # ambil frame dari RTSP atau mock file
+│   ├── capture.py              # frame mock, video file, atau RTSP via OpenCV
 │   ├── detect.py               # jalankan YOLOv8n
 │   ├── roi.py                  # mapping bounding box -> ROI (shapely)
 │   ├── occupancy.py            # hitung status per meja + agregat
@@ -221,6 +226,8 @@ YOLO_IOU_THRESHOLD=0.45
 YOLO_IMAGE_SIZE=640
 MOCK_MODE=true
 MOCK_FRAME_PATH=dataset/mock/workspace.ppm
+MOCK_VIDEO_PATH=
+MOCK_VIDEO_LOOP=true
 CAFE_ID=1
 ROI_CONFIG_PATH=inference/config/roi_config.json
 BACKEND_API_URL=http://localhost:8000
@@ -242,12 +249,37 @@ S3_ENDPOINT_URL=
 S3_BUCKET_NAME=
 S3_ACCESS_KEY=
 S3_SECRET_KEY=
+AWS_REGION=
+SNAPSHOT_STORAGE_ENABLED=false
+SNAPSHOT_STORAGE_BACKEND=local
+SNAPSHOT_DIR=snapshots
+SNAPSHOT_MAX_WIDTH=480
+SNAPSHOT_MAX_HEIGHT=270
+SNAPSHOT_JPEG_QUALITY=65
 
 # frontend
 NEXT_PUBLIC_API_BASE_URL=
 ```
 
 `MOCK_MODE` wajib tersedia untuk evaluasi lokal tanpa hardware. Nilai secret pada `.env.example` harus kosong atau placeholder lokal dan tidak boleh dipakai untuk production.
+
+`MOCK_VIDEO_PATH` bersifat opsional dan dipakai bila terisi; video lokal dibaca
+frame-per-frame dan dapat diulang dengan `MOCK_VIDEO_LOOP=true`. File video
+lokal tidak dikomit. Snapshot kamera juga bersifat opt-in: ketika
+`SNAPSHOT_STORAGE_ENABLED=false`, frame tidak ditulis ke disk atau dikirim ke
+object storage. Mode `local` menyimpan di `SNAPSHOT_DIR`, sedangkan mode `s3`
+memakai `put_object` tanpa ACL publik dan membutuhkan bucket yang private.
+Sebelum disimpan, gambar didekode dan diturunkan ke `SNAPSHOT_MAX_WIDTH` ×
+`SNAPSHOT_MAX_HEIGHT` dengan `SNAPSHOT_JPEG_QUALITY`; ini adalah proteksi
+resolusi rendah untuk snapshot demo, bukan face recognition atau klaim bahwa
+semua wajah menjadi anonim secara matematis.
+
+`docker-compose.yml` menjalankan service `inference` setelah backend sehat.
+Image inference berisi source dan fixture mock, tetapi tidak membawa model
+weight atau data privat. `yolov8n.pt` diambil oleh Ultralytics saat pertama
+dipakai dan disimpan di volume Docker; untuk lingkungan tanpa network,
+sediakan weight secara lokal dan arahkan `YOLO_PERSON_MODEL_PATH` ke file yang
+dimount sebelum menjalankan service.
 
 ## 8. Kontrak API (MVP)
 

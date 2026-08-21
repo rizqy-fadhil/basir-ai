@@ -31,7 +31,7 @@ services:
       # The .env file at the repo root uses "db" as well; this is kept
       # explicit here for clarity and to override any local override.
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-basirai}:${POSTGRES_PASSWORD:-basirai-local-only}@db:5432/${POSTGRES_DB:-basirai}
-      BACKEND_API_KEY: ${BACKEND_API_KEY}
+      BACKEND_API_KEY: ${BACKEND_API_KEY:-local-development-key}
     ports:
       - "8000:8000"
     healthcheck:
@@ -40,6 +40,45 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+
+  inference:
+    build:
+      context: .
+      dockerfile: inference/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      CAFE_ID: ${CAFE_ID:-1}
+      ROI_CONFIG_PATH: ${ROI_CONFIG_PATH:-/app/inference/config/roi_config.json}
+      BACKEND_API_URL: ${BACKEND_API_URL:-http://backend:8000}
+      BACKEND_API_KEY: ${BACKEND_API_KEY:-local-development-key}
+      BACKEND_REQUEST_TIMEOUT_SECONDS: ${BACKEND_REQUEST_TIMEOUT_SECONDS:-10}
+      BACKEND_RETRY_COUNT: ${BACKEND_RETRY_COUNT:-1}
+      RTSP_URL: ${RTSP_URL:-}
+      DETECTION_INTERVAL_SECONDS: ${DETECTION_INTERVAL_SECONDS:-45}
+      MOCK_MODE: ${MOCK_MODE:-true}
+      MOCK_FRAME_PATH: ${MOCK_FRAME_PATH:-/app/dataset/mock/workspace.ppm}
+      MOCK_VIDEO_PATH: ${MOCK_VIDEO_PATH:-}
+      MOCK_VIDEO_LOOP: ${MOCK_VIDEO_LOOP:-true}
+      YOLO_PERSON_MODEL_PATH: ${YOLO_PERSON_MODEL_PATH:-/app/.config/Ultralytics/yolov8n.pt}
+      YOLO_PERSON_CLASS_ID: ${YOLO_PERSON_CLASS_ID:-0}
+      YOLO_PERSON_CONFIDENCE_THRESHOLD: ${YOLO_PERSON_CONFIDENCE_THRESHOLD:-0.40}
+      YOLO_IOU_THRESHOLD: ${YOLO_IOU_THRESHOLD:-0.45}
+      YOLO_IMAGE_SIZE: ${YOLO_IMAGE_SIZE:-640}
+      SNAPSHOT_STORAGE_ENABLED: ${SNAPSHOT_STORAGE_ENABLED:-false}
+      SNAPSHOT_STORAGE_BACKEND: ${SNAPSHOT_STORAGE_BACKEND:-local}
+      SNAPSHOT_DIR: ${SNAPSHOT_DIR:-/app/snapshots}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
+      AWS_REGION: ${AWS_REGION:-}
+    volumes:
+      - inference_ultralytics_cache:/app/.config/Ultralytics
+      - ./dataset/mock:/app/dataset/mock:ro
+      - inference_snapshots:/app/snapshots
 
   web:
     build:
@@ -57,3 +96,5 @@ services:
 
 volumes:
   postgres_data:
+  inference_ultralytics_cache:
+  inference_snapshots:

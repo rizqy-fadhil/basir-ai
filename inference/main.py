@@ -15,6 +15,7 @@ from inference.capture import CaptureConfig, open_capture
 from inference.detect import PersonDetector, load_person_detector
 from inference.occupancy import calculate_occupancy
 from inference.roi import ROIConfig, load_roi_config
+from inference.storage import SnapshotStore, build_snapshot_store
 
 
 LOGGER = logging.getLogger("basir_ai.inference")
@@ -239,6 +240,7 @@ class InferenceRunner:
         capture: Any,
         detector: PersonDetector,
         backend: BackendClient,
+        snapshot_store: SnapshotStore | None = None,
         logger: logging.Logger | None = None,
     ) -> None:
         self.cafe_id = cafe_id
@@ -246,6 +248,7 @@ class InferenceRunner:
         self.capture = capture
         self.detector = detector
         self.backend = backend
+        self.snapshot_store = snapshot_store
         self.logger = logger or LOGGER
 
     def run_once(self) -> CycleResult:
@@ -258,6 +261,19 @@ class InferenceRunner:
             )
 
         captured_at = getattr(frame, "captured_at", datetime.now(timezone.utc))
+        if self.snapshot_store is not None:
+            try:
+                reference = self.snapshot_store.save(
+                    frame,
+                    cafe_id=self.cafe_id,
+                    captured_at=captured_at,
+                )
+                if reference is not None:
+                    self.logger.info("Snapshot privat tersimpan: %s", reference.uri)
+            except Exception as exc:
+                self.logger.warning(
+                    "Snapshot privat gagal disimpan; cycle tetap dilanjutkan: %s", exc
+                )
         try:
             detections = tuple(self.detector.predict(frame))
         except Exception as exc:
@@ -342,6 +358,7 @@ def build_runtime(
         timeout_seconds=config.backend_timeout_seconds,
         retry_count=config.backend_retry_count,
     )
+    snapshot_store = build_snapshot_store(environ)
     capture = open_capture(capture_config)
     return (
         InferenceRunner(
@@ -350,6 +367,7 @@ def build_runtime(
             capture=capture,
             detector=detector,
             backend=backend,
+            snapshot_store=snapshot_store,
         ),
         config,
     )

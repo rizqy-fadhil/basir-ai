@@ -16,6 +16,9 @@ from typing import Any, Mapping
 
 
 LOGGER = logging.getLogger(__name__)
+ULTRALYTICS_IMAGE_SUFFIXES = frozenset(
+    {".bmp", ".dng", ".jpeg", ".jpg", ".mpo", ".pfm", ".png", ".tif", ".tiff", ".webp"}
+)
 
 
 class DetectionConfigurationError(ValueError):
@@ -121,6 +124,7 @@ class PersonDetector:
         if source is None or (isinstance(source, (bytes, bytearray)) and not source):
             LOGGER.warning("Frame kosong; person detector mengembalikan 0 deteksi.")
             return ()
+        source = _prepare_model_source(source, payload)
         try:
             results = self._model.predict(
                 source=source,
@@ -152,6 +156,35 @@ def _model_source(frame: Any) -> Any:
         if path.is_file():
             return str(path)
     return getattr(frame, "payload", frame)
+
+
+def _prepare_model_source(source: Any, payload: Any) -> Any:
+    """Decode image bytes when the source extension is unsupported by YOLO."""
+
+    if isinstance(source, str):
+        path = Path(source)
+        if path.is_file() and path.suffix.lower() not in ULTRALYTICS_IMAGE_SUFFIXES:
+            decoded = _decode_image_bytes(payload)
+            return decoded if decoded is not None else source
+        return source
+    if isinstance(source, (bytes, bytearray, memoryview)):
+        decoded = _decode_image_bytes(source)
+        return decoded if decoded is not None else source
+    return source
+
+
+def _decode_image_bytes(payload: Any) -> Any | None:
+    if not isinstance(payload, (bytes, bytearray, memoryview)):
+        return None
+    try:
+        import cv2
+        import numpy as np
+
+        return cv2.imdecode(
+            np.frombuffer(bytes(payload), dtype=np.uint8), cv2.IMREAD_COLOR
+        )
+    except Exception:
+        return None
 
 
 def _parse_person_results(

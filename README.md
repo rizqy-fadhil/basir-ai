@@ -4,13 +4,13 @@ Basir AI adalah MVP sistem ketersediaan meja workspace cafe. Kamera area workspa
 
 ## Status repository
 
-Fondasi teknis, kontrak model, dan pipeline reproducible untuk menyiapkan
-dataset Table–Chair sudah tersedia. Pipeline inference runtime dan occupancy
-engine memiliki detector person serta penghitungan status per ROI yang teruji
-dengan fixture mock. Backend API (4 endpoint, 29 unit test) tersedia dan
-dapat dijalankan via Docker Compose. Fine-tuning table-chair masih menunggu
-review manual dataset, artifact gambar, dan environment training; bobot atau
-metric belum diklaim sebelum eksperimen held-out benar-benar dijalankan.
+Fondasi teknis, kontrak model, dan pipeline reproducible untuk dataset
+Table–Chair sudah tersedia. Pipeline inference runtime dan occupancy engine
+memiliki detector person, mock frame/video capture, dan penghitungan status per
+ROI yang teruji. Backend API tersedia dan dapat dijalankan bersama service
+inference melalui Docker Compose. Fine-tuning table-chair sudah dijalankan
+secara lokal pada dataset Roboflow yang didokumentasikan di `dataset/README.md`;
+dataset, hasil run, dan bobot tetap tidak dikomit.
 
 ## Struktur canonical
 
@@ -45,7 +45,7 @@ Prasyarat: Docker Desktop dengan Docker Compose v2.
 # 1. Salin file konfigurasi lingkungan
 Copy-Item .env.example .env
 
-# 2. Jalankan database + backend (migrasi berjalan otomatis)
+# 2. Jalankan database, backend, dan inference (migrasi backend berjalan otomatis)
 docker compose up --build -d
 
 # 3. (Opsional) Jalankan seed data untuk data demo
@@ -59,6 +59,7 @@ Setelah `docker compose up` selesai:
 | Backend API | http://localhost:8000       |
 | API Docs    | http://localhost:8000/docs  |
 | Health      | http://localhost:8000/health|
+| Inference   | background service          |
 
 **Catatan seed data**: Seed tidak berjalan otomatis. Jalankan `docker compose exec backend python -m app.seed` untuk mengisi data demo (cafe dan meja). Tanpa seed, endpoint `/cafes/{id}/status` akan mengembalikan 404 karena belum ada data cafe.
 
@@ -86,6 +87,18 @@ Untuk menjalankan satu cycle inference setelah dependency dan `.env` siap:
 ```powershell
 python -m inference.main --once
 ```
+
+Mode mock default memakai `dataset/mock/workspace.ppm`. Untuk menguji file
+video lokal, letakkan video yang tidak berisi data privat di `dataset/mock/`,
+lalu set `MOCK_VIDEO_PATH=dataset/mock/nama-video.mp4` dan opsional
+`MOCK_VIDEO_LOOP=false` di `.env`. Compose me-mount folder mock secara read-only;
+video lokal tidak boleh dikomit.
+
+Penyimpanan snapshot default-nya nonaktif untuk melindungi privasi. Jika demo
+memang memerlukan snapshot, aktifkan `SNAPSHOT_STORAGE_ENABLED=true` dan pilih
+`SNAPSHOT_STORAGE_BACKEND=local` atau `s3`; jangan menaruh credential di file
+yang dikomit. Gambar yang disimpan diturunkan ke resolusi rendah dan JPEG
+quality yang dikonfigurasi sebelum ditulis.
 
 Jika backend tidak tersedia atau satu meja gagal di-update, cycle mencatat
 error lalu melanjutkan tanpa menghentikan proses meja lainnya. Endpoint internal

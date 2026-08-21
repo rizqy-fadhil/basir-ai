@@ -85,7 +85,7 @@ class PersonDetectorTests(unittest.TestCase):
         self.assertEqual(detector.predict(b""), ())
         self.assertEqual(model.calls, [])
 
-    def test_mock_frame_path_is_forwarded_to_model(self) -> None:
+    def test_mock_ppm_is_decoded_before_model_inference(self) -> None:
         fixture = (
             Path(__file__).resolve().parents[2] / "dataset" / "mock" / "workspace.ppm"
         )
@@ -95,7 +95,10 @@ class PersonDetectorTests(unittest.TestCase):
 
         detector.predict(capture.read())
 
-        self.assertEqual(model.calls[0]["source"], str(fixture))
+        source = model.calls[0]["source"]
+        self.assertFalse(isinstance(source, str))
+        self.assertEqual(len(source.shape), 3)
+        self.assertEqual(source.shape[2], 3)
 
 
 if __name__ == "__main__":
