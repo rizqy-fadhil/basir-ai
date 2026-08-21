@@ -88,6 +88,39 @@ Untuk menjalankan satu cycle inference setelah dependency dan `.env` siap:
 python -m inference.main --once
 ```
 
+### Uji webcam laptop secara lokal
+
+`inference/camera_test.py` adalah visual smoke test yang terpisah dari
+occupancy production. Source `0` berarti webcam bawaan laptop. Tool ini
+menjalankan dua model secara berdampingan: model COCO hanya untuk `person`,
+sedangkan model fine-tuned hanya untuk preview `table` dan `chair`. Hasil
+preview tidak mengubah ROI, tidak mengirim status ke backend, dan tidak
+menyimpan video kecuali `--save-dir` diberikan secara eksplisit.
+
+Jalankan dari root repository pada Python host yang dapat mengakses webcam:
+
+```powershell
+python -m inference.camera_test --source 0 `
+  --person-model yolov8n.pt `
+  --calibration-model inference/models/table-chair-best.pt
+```
+
+Tekan `q` atau `Esc` untuk berhenti. Jika environment memakai OpenCV headless
+(seperti image Docker inference), gunakan mode tanpa window untuk menguji file
+video:
+
+```powershell
+python -m inference.camera_test `
+  --source C:\path\ke\video-cafe.mp4 `
+  --headless --max-frames 30
+```
+
+Mode GUI membutuhkan paket `opencv-python` pada environment host; paket
+`opencv-python-headless` cukup untuk `--headless`. Webcam laptop tidak
+diteruskan otomatis ke Docker Compose. Untuk preview person saja, tambahkan
+`--person-only`. Threshold dan path model dapat diambil dari `.env` melalui
+`YOLO_PERSON_*`, `YOLO_CALIBRATION_*`, serta `WEBCAM_INDEX`.
+
 Mode mock default memakai `dataset/mock/workspace.ppm`. Untuk menguji file
 video lokal, letakkan video yang tidak berisi data privat di `dataset/mock/`,
 lalu set `MOCK_VIDEO_PATH=dataset/mock/nama-video.mp4` dan opsional
