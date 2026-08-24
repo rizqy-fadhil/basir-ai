@@ -200,6 +200,42 @@ class BackendClient:
             self.logger.error("Gagal update meja_id=%s: %s", meja_id, exc)
             return False
 
+    def upsert_snapshot(
+        self,
+        *,
+        cafe_id: int,
+        area_kamera: str,
+        url: str,
+        captured_at: datetime,
+    ) -> bool:
+        """Post snapshot metadata; log and return False on failure."""
+
+        payload = {
+            "cafe_id": cafe_id,
+            "area_kamera": area_kamera,
+            "url": url,
+            "captured_at": _iso_timestamp(captured_at),
+        }
+        try:
+            response = self._request("POST", "/internal/snapshot", json=payload)
+            result = response.json()
+            if (
+                not isinstance(result, Mapping)
+                or result.get("action") not in VALID_ACTIONS
+            ):
+                raise BackendClientError(
+                    "Response upsert snapshot tidak sesuai kontrak."
+                )
+            self.logger.info(
+                "Snapshot metadata terkirim ke backend (action=%s, id=%s).",
+                result.get("action"),
+                result.get("snapshot_id"),
+            )
+            return True
+        except (BackendClientError, ValueError, TypeError) as exc:
+            self.logger.error("Gagal kirim snapshot metadata ke backend: %s", exc)
+            return False
+
     def _request(self, method: str, path: str, **kwargs: Any) -> Any:
         url = f"{self.base_url}{path}"
         for attempt in range(self.retry_count + 1):
@@ -270,6 +306,16 @@ class InferenceRunner:
                 )
                 if reference is not None:
                     self.logger.info("Snapshot privat tersimpan: %s", reference.uri)
+                    # Send metadata to backend so the DB record is created
+                    snapshot_url = f"/snapshots/{reference.object_key}"
+                    self.backend.upsert_snapshot(
+                        cafe_id=self.cafe_id,
+                        area_kamera=reference.object_key.split("/")[1]
+                        if "/" in reference.object_key
+                        else "workspace",
+                        url=snapshot_url,
+                        captured_at=captured_at,
+                    )
             except Exception as exc:
                 self.logger.warning(
                     "Snapshot privat gagal disimpan; cycle tetap dilanjutkan: %s", exc

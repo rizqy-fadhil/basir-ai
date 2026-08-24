@@ -5,15 +5,18 @@ Run with:
     uvicorn app.main:app --reload
 """
 
+import os
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.routers.meja import router as meja_router
-from app.routers.snapshot import router as snapshot_router
+from app.routers.snapshot import router as snapshot_router, internal_snapshot_router
 from app.routers.status import cafe_router, internal_router
 
 app = FastAPI(
@@ -51,6 +54,14 @@ app.include_router(meja_router)
 app.include_router(snapshot_router)
 app.include_router(cafe_router)
 app.include_router(internal_router)
+app.include_router(internal_snapshot_router)
+
+# ---------------------------------------------------------------------------
+# Static file serving — snapshot images from shared volume
+# ---------------------------------------------------------------------------
+_SNAPSHOT_DIR = os.environ.get("SNAPSHOT_SERVE_DIR", "/app/snapshots")
+if os.path.isdir(_SNAPSHOT_DIR):
+    app.mount("/snapshots", StaticFiles(directory=_SNAPSHOT_DIR), name="snapshots")
 
 
 # ---------------------------------------------------------------------------

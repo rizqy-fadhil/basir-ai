@@ -77,4 +77,5 @@ class OkupansiResponse(BaseModel):
     cafe_id: int
     okupansi_persen: int | None  # None when no status data exists yet
     updated_at: datetime | None  # Most recent status updated_at across all mejas
+    snapshot_url: str | None = None  # Latest snapshot URL, None when no snapshot exists
     meja: list[MejaStatusItem]

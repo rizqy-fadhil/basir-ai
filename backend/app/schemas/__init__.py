@@ -1,7 +1,7 @@
 """Pydantic schemas for request/response validation."""
 
 from app.schemas.meja import MejaOut
-from app.schemas.snapshot import SnapshotOut
+from app.schemas.snapshot import SnapshotOut, SnapshotUpsertRequest, SnapshotUpsertResponse
 from app.schemas.status import (
     MejaStatusItem,
     OkupansiResponse,
@@ -14,6 +14,8 @@ __all__ = [
     "MejaStatusItem",
     "OkupansiResponse",
     "SnapshotOut",
+    "SnapshotUpsertRequest",
+    "SnapshotUpsertResponse",
     "StatusUpsertRequest",
     "StatusUpsertResponse",
 ]

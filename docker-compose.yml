@@ -32,8 +32,11 @@ services:
       # explicit here for clarity and to override any local override.
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-basirai}:${POSTGRES_PASSWORD:-basirai-local-only}@db:5432/${POSTGRES_DB:-basirai}
       BACKEND_API_KEY: ${BACKEND_API_KEY:-local-development-key}
+      SNAPSHOT_SERVE_DIR: /app/snapshots
     ports:
       - "8000:8000"
+    volumes:
+      - inference_snapshots:/app/snapshots:ro
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
       interval: 10s

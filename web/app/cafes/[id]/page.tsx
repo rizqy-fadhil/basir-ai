@@ -4,6 +4,7 @@ import useSWR from "swr";
 import {
   type CafeStatus,
   fetcher,
+  API_BASE,
   POLLING_INTERVAL_MS,
 } from "@/lib/api";
 import SnapshotHero from "@/components/SnapshotHero";
@@ -89,7 +90,7 @@ export default function CafeDashboard({ params }: PageProps) {
       <main className="flex-1 space-y-6">
         {/* Hero snapshot */}
         <SnapshotHero
-          snapshotUrl={data!.snapshot_url}
+          snapshotUrl={data!.snapshot_url ? `${API_BASE}${data!.snapshot_url}` : undefined}
           updatedAt={data!.updated_at ?? undefined}
         />
 

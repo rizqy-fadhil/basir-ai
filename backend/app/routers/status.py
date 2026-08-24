@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Cafe, Meja, StatusMeja
+from app.models import Cafe, Meja, Snapshot, StatusMeja
 from app.schemas.status import (
     MejaStatusItem,
     OkupansiResponse,
@@ -89,10 +89,20 @@ def get_cafe_status(cafe_id: int, db: Session = Depends(get_db)) -> OkupansiResp
     else:
         okupansi_persen = None
 
+    # Fetch latest snapshot URL for this cafe
+    latest_snapshot = (
+        db.query(Snapshot)
+        .filter(Snapshot.cafe_id == cafe_id)
+        .order_by(Snapshot.captured_at.desc())
+        .first()
+    )
+    snapshot_url = latest_snapshot.url if latest_snapshot else None
+
     return OkupansiResponse(
         cafe_id=cafe_id,
         okupansi_persen=okupansi_persen,
         updated_at=latest_updated_at,
+        snapshot_url=snapshot_url,
         meja=items,
     )
 
