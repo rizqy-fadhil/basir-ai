@@ -65,9 +65,11 @@ services:
       MOCK_FRAME_PATH: ${MOCK_FRAME_PATH:-/app/dataset/mock/workspace.ppm}
       MOCK_VIDEO_PATH: ${MOCK_VIDEO_PATH:-}
       MOCK_VIDEO_LOOP: ${MOCK_VIDEO_LOOP:-true}
-      YOLO_PERSON_MODEL_PATH: ${YOLO_PERSON_MODEL_PATH:-/app/.config/Ultralytics/yolov8n.pt}
+      YOLO_PERSON_MODEL_PATH: ${YOLO_PERSON_MODEL_PATH:-/app/models/yolov8n.pt}
       YOLO_PERSON_CLASS_ID: ${YOLO_PERSON_CLASS_ID:-0}
       YOLO_PERSON_CONFIDENCE_THRESHOLD: ${YOLO_PERSON_CONFIDENCE_THRESHOLD:-0.40}
+      YOLO_CALIBRATION_MODEL_PATH: ${YOLO_CALIBRATION_MODEL_PATH:-/app/models/table-chair-best.pt}
+      YOLO_CALIBRATION_CONFIDENCE_THRESHOLD: ${YOLO_CALIBRATION_CONFIDENCE_THRESHOLD:-0.35}
       YOLO_IOU_THRESHOLD: ${YOLO_IOU_THRESHOLD:-0.45}
       YOLO_IMAGE_SIZE: ${YOLO_IMAGE_SIZE:-640}
       SNAPSHOT_STORAGE_ENABLED: ${SNAPSHOT_STORAGE_ENABLED:-false}
@@ -80,6 +82,7 @@ services:
       AWS_REGION: ${AWS_REGION:-}
     volumes:
       - inference_ultralytics_cache:/app/.config/Ultralytics
+      - ${MODEL_DIR:-./local-models}:/app/models:ro
       - ./dataset/mock:/app/dataset/mock:ro
       - inference_snapshots:/app/snapshots
 

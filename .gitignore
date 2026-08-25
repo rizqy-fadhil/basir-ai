@@ -32,6 +32,9 @@ pnpm-debug.log*
 # Local model weights and generated media
 *.pt
 *.onnx
+local-models/
+demo-input/
+docker-output/
 snapshots/
 data/raw/
 data/processed/
@@ -41,6 +44,7 @@ data/runs/
 runs/
 dataset/private/
 dataset/generated/
+dataset/mock/cafe_demo_*
 
 # Local database and editor files
 *.sqlite3

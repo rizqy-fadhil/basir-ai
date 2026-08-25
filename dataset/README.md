@@ -206,14 +206,13 @@ Artifact lokal run ini:
 
 Sesudah training, script menyimpan training manifest dengan parameter aktual,
 split, preprocessing, metrik yang benar-benar dikembalikan Ultralytics, dan
-SHA-256 `best.pt`. Bobot final tidak dikomit; rilis model harus mengunggahnya
-sebagai GitHub Release asset bersama checksum dan manifest tersebut.
+SHA-256 `best.pt`. Bobot final tidak dikomit; bobot, checksum, dan manifest
+run ini tersedia sebagai asset GitHub Release `models-v1.0.0`.
 
-Setelah release tersedia, unduh asset dengan GitHub CLI (ganti tag release
-sesuai rilis yang benar-benar dibuat), lalu verifikasi checksum dari manifest:
+Unduh asset dengan GitHub CLI lalu verifikasi checksum dari manifest:
 
 ```powershell
-gh release download <release-tag> --repo rizqy-fadhil/basir-ai `
+gh release download models-v1.0.0 --repo rizqy-fadhil/basir-ai `
   --pattern table-chair-best.pt --dir inference/models
 certutil -hashfile inference/models/table-chair-best.pt SHA256
 ```

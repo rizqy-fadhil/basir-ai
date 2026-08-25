@@ -216,10 +216,12 @@ Semua service membaca dari `.env`; jangan hardcode credential, path, atau URL.
 # inference service — runtime occupancy
 RTSP_URL=
 DETECTION_INTERVAL_SECONDS=45
-YOLO_PERSON_MODEL_PATH=yolov8n.pt
+MODEL_DIR=./local-models
+# Paths below are container paths when running docker-compose.
+YOLO_PERSON_MODEL_PATH=/app/models/yolov8n.pt
 YOLO_PERSON_CLASS_ID=0
 YOLO_PERSON_CONFIDENCE_THRESHOLD=0.40
-YOLO_CALIBRATION_MODEL_PATH=inference/models/table-chair-best.pt
+YOLO_CALIBRATION_MODEL_PATH=/app/models/table-chair-best.pt
 YOLO_CALIBRATION_CONFIDENCE_THRESHOLD=0.35
 CALIBRATION_CHAIR_DISTANCE_FACTOR=1.5
 YOLO_IOU_THRESHOLD=0.45
@@ -230,7 +232,7 @@ MOCK_VIDEO_PATH=
 MOCK_VIDEO_LOOP=true
 CAFE_ID=1
 ROI_CONFIG_PATH=inference/config/roi_config.json
-BACKEND_API_URL=http://localhost:8000
+BACKEND_API_URL=http://backend:8000
 BACKEND_REQUEST_TIMEOUT_SECONDS=10
 BACKEND_RETRY_COUNT=1
 
@@ -259,6 +261,7 @@ SNAPSHOT_JPEG_QUALITY=65
 
 # frontend
 NEXT_PUBLIC_API_BASE_URL=
+NEXT_PUBLIC_CAFE_ID=1
 ```
 
 `MOCK_MODE` wajib tersedia untuk evaluasi lokal tanpa hardware. Nilai secret pada `.env.example` harus kosong atau placeholder lokal dan tidak boleh dipakai untuk production.
@@ -276,10 +279,10 @@ semua wajah menjadi anonim secara matematis.
 
 `docker-compose.yml` menjalankan service `inference` setelah backend sehat.
 Image inference berisi source dan fixture mock, tetapi tidak membawa model
-weight atau data privat. `yolov8n.pt` diambil oleh Ultralytics saat pertama
-dipakai dan disimpan di volume Docker; untuk lingkungan tanpa network,
-sediakan weight secara lokal dan arahkan `YOLO_PERSON_MODEL_PATH` ke file yang
-dimount sebelum menjalankan service.
+weight atau data privat. `scripts/setup_demo.*` mengunduh dua weight dari
+GitHub Release, memverifikasi SHA-256, lalu memasang folder `local-models/`
+secara read-only sebagai `/app/models`; ini membuat clone baru reproducible
+tanpa copy bobot manual.
 
 ## 8. Kontrak API (MVP)
 

@@ -18,3 +18,5 @@ dataset/private/
 dataset/mock/*.mp4
 dataset/mock/*.avi
 dataset/mock/*.mov
+dataset/mock/cafe_demo_*
+dataset/mock/*_annotated.*

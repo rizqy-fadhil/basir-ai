@@ -36,6 +36,7 @@ pernah menggantikan `roi_config.json` tanpa konfirmasi manusia.
 - [Database schema](DATABASE_SCHEMA.md) — skema data MVP yang akan dimigrasikan dengan Alembic.
 - [Design](DESIGN.md) — token visual, layout, copy, dan aksesibilitas.
 - [Competition rules](context/COMPETITION_RULES.md) — batas kepatuhan, reproducibility, dan integritas demo.
+- [Runbook panitia](PANITIA_RUNBOOK.md) — setup model dan full Docker Compose dari clone baru.
 
 ## Menjalankan lokal via Docker Compose
 
@@ -60,6 +61,11 @@ Setelah `docker compose up` selesai:
 | API Docs    | http://localhost:8000/docs  |
 | Health      | http://localhost:8000/health|
 | Inference   | background service          |
+
+Untuk setup panitia yang mengunduh bobot model, memverifikasi checksum,
+membangun image, menunggu backend healthy, dan menjalankan seed secara
+otomatis, gunakan [PANITIA_RUNBOOK.md](PANITIA_RUNBOOK.md) dan script di
+`scripts/`.
 
 **Catatan seed data**: Seed tidak berjalan otomatis. Jalankan `docker compose exec backend python -m app.seed` untuk mengisi data demo (cafe dan meja). Tanpa seed, endpoint `/cafes/{id}/status` akan mengembalikan 404 karena belum ada data cafe.
 
